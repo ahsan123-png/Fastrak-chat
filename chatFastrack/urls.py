@@ -7,5 +7,5 @@ urlpatterns = [
     path('', include("guestTokenSessions.urls")),
     path('', include("guestUser.urls")),
     path('', include("openaiTuning.urls")),
-    path('', include("pricePlains.urls")),
+    path('', include("pricePlain.urls")),
 ]
