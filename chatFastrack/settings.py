@@ -12,6 +12,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "userChat",
     "fastrakGPT",
+    "guestTokenSessions",
+    "guestUser",
+    "openaiTuning",
+    "pricePlain",
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
