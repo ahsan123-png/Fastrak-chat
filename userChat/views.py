@@ -22,7 +22,7 @@ class RegisterUserAPIView(APIView):
             )
         username=email.split('@')[0]
         username+= str(random.randint(111,999))
-        user=UserEx.objects.create(
+        user=UserEx.objects.create_user(
             username=username,
             email=email,
             password=password,
@@ -54,23 +54,27 @@ class LoginUserAPIView(APIView):
                 },status=status.HTTP_400_BAD_REQUEST
             )
         try:
-            user = UserEx.objects.get(email=email)
-        except UserEx.DoesNotExist:
-            return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Authenticate the user using the standard authenticate() method
-        user = authenticate(request, username=user.username, password=password)
-        if user is None:
+            user = UserEx.objects.select_related().get(email=email)
+            if not user.check_password(password):
+                return JsonResponse(
+                    {"error": "Invalid email or password."},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            refresh = RefreshToken.for_user(user)
             return JsonResponse(
-            {'error': 'Invalid credentials'},
-             status=status.HTTP_400_BAD_REQUEST)
-        refresh=RefreshToken.for_user(user)
-        return JsonResponse(
-            {
-                'success':"Login successfully",
-                "user_id":user.id,
-                "email":user.email,
-                "JWT_accessToken" :str(refresh.access_token),
-                "JWT_refreshToken" :str(refresh),
-            }
-        )
+                {
+                    "success": "Login successful",
+                    "user_id": user.id,
+                    "username": user.username,
+                    "role": user.role,
+                    "email": user.email,
+                    "JWT_accessToken": str(refresh.access_token),
+                    "JWT_refreshToken": str(refresh),
+                },
+                status=status.HTTP_200_OK
+            )
+        except UserEx.DoesNotExist:
+            return JsonResponse(
+                {"error": "Invalid email or password."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
